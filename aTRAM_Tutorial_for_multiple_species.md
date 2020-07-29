@@ -15,19 +15,22 @@ Also make sure that you have all of the necessary programs installed beforehand.
 * Exonerate
 * Python
 * 1 of the 4 (abyss, trinity, velvet, or spades)
+  * In this tutorial I use velvet, but any of the four will work
 
-Last but not least, you need to gitclone aTRAM by running:
+Last but not least, you need to gitclone aTRAM while in the project directory by running:
 
 ```bash
 git clone https://github.com/juliema/aTRAM.git
 ```
 
+One other thing to note is that the scripts that I run below where created for the paired end reads and reference genome that I chose and had available. It is possible, and even likely, that if yours are bigger or smaller that you will need more or less time and computational resources. So think of the scripts as a general idea for what you need and adjust as needed. My reference genome was 25 Megabyte .fasta file and the largerst paired-end read was 11 Gigabyte compressed .fastq file.
+
 # Choose a Reference Genome
-The reason you are using aTRAM in the first place is because you lack a properly assembled genome, however there are probably high quality reference genomes already published that are closely related to your taxa of interest that would suffice for our purposes. Obviously the more closely related they are the better.
+The reason you are using aTRAM in the first place is because you lack a properly assembled genome but do have low coverage reads. Although we don't have a reference genome there are probably high quality reference genomes already published that are closely related to your taxa of interest that would suffice for our purposes. So in effect, we use a related reference genome as a guide for our paired end reads to map onto. The more closely related our chosen reference genome is to our species of interest the better.
 
-Once you have selected your reference genome you will need to have your reads for the samples of interest that you want to create genome assemblies for. Once those are obtained move the reads into the Reads directory and the reference into the Reference directory. The next step is to use BUSCO to compare the reads with the reference to find matching genes that can be used to create COGs. 
+Once you have selected your reference genome you will need to have your reads for the samples of interest that you want to create genome assemblies for. We will be mapping these on to one another using the reference genome as a guide. Once those are obtained move the reads into the Reads directory and the reference into the Reference directory. The next step is to use BUSCO to compare the reads with the reference to find matching genes that can be used to create COGs. 
 
-Below is the script for running BUSCO on a HPC cluster that uses SLURM. Run for both proteins and genome. Genome is used later.
+Below is the script for running BUSCO on a HPC cluster that uses SLURM. Save it in the Jobs directory and then run it for both proteins and genome uisng `<sbatch>` followed by whatever you decided to name the script. 
 
 ```bash
 #!/bin/bash
@@ -55,7 +58,7 @@ run_BUSCO.py -m ${m} -i ${assembly} -o ${output}_${species} -l ${l} -c 1 -f
 
 ## Does this output to the correct directory?
 
-First wait for the script above to finish. Later on for the aTRAM stitcher part you will need to create a taxa list. This can be created while changing to the single_copy_busco_sequences directory that contains all of the .faa and .fna files and then running the script below. It essentially takes the names from each of the amino acid sequences (.faa files) by printing all of the .faa files and stripping the .faa at the end and then puts them in a text file.
+First wait for the script above to finish. Later on for the aTRAM stitcher part you will need to create a taxa list. This can be created while changing to the single_copy_busco_sequences directory that was created when we ran BUSCO and contains all of the .faa and .fna files. Once that is your working directory run the script below. It essentially takes the names from each of the amino acid sequences (.faa files) by printing all of the .faa files and stripping the .faa at the end and then puts them in a text file named taxa.txt.
 
 ```bash
 ls *.faa | sed 's/.faa//' > taxa.txt
@@ -68,11 +71,11 @@ cat *.fna > all.fna
 cat *.faa > all.faa
 ```
 
-Next we begin using aTRAM. The first step is the preprocessing.
+Next we begin using aTRAM. The first step is the preprocessing step.
 
 # aTRAM Preprocessing
 
-The preprocessing step takes paired-end reads as input and from them creates BLAST database shards as well as a sqlite database for rapid read retrieval. The bigger your reads are the more shards you will have. The script below will run atram_preprocessor.py on all of the paired-end reads in a directory.  
+The preprocessing step takes paired-end reads as input and from them creates BLAST database shards as well as a sqlite database for rapid read retrieval. The bigger your reads the more shards you will have. The script below will run atram_preprocessor.py on all of the paired-end reads in the Reads directory.  
 
 ```bash
 #!/bin/sh
