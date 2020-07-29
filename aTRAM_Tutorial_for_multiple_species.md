@@ -30,7 +30,7 @@ The reason you are using aTRAM in the first place is because you lack a properly
 
 Once you have selected your reference genome you will need to have your reads for the samples of interest that you want to create genome assemblies for. We will be mapping these on to one another using the reference genome as a guide. Once those are obtained move the reads into the Reads directory and the reference into the Reference directory. The next step is to use BUSCO to compare the reads with the reference to find matching genes that can be used to create COGs. 
 
-Below is the script for running BUSCO on a HPC cluster that uses SLURM. Save it in the Jobs directory and then run it for both proteins and genome uisng `<sbatch>` followed by whatever you decided to name the script. 
+Below is the script for running BUSCO on a HPC cluster that uses SLURM. Save it in the Jobs directory and then run it for both proteins and genome uisng `sbatch` followed by whatever you decided to name the script. 
 
 ```bash
 #!/bin/bash
