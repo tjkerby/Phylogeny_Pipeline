@@ -212,6 +212,23 @@ sbatch /path_to_project/atram_scripts/atram_stitcher/${name}.sh
 
 done
 ```
+# Edit headers and prepare for Orthograph
+
+Needs to be fixed below.
+
+```bash
+#!/bin/sh
+
+for directory in /path_to_project/atram_stitcher_output/high_memory/*
+do
+cd ${directory}
+name=`basename ${directory}`
+for f in *fasta
+do sed -i '/>/>${name}' $f
+done
+cd ../
+done
+```
 
 # You're Finished!!!
 
