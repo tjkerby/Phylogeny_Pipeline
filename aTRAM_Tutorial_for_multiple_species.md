@@ -1,5 +1,7 @@
 # aTRAM Tutorial for Multiple Species
 
+# FIXME Need to change from modules to miniconda
+
 ## Getting Set Up
 First thing to do is to get a project directory up and running. Once that is completed the next step is to set up some directories inside of that. You can do so by entering the project directory and running:
 
@@ -237,6 +239,8 @@ cd ../
 done
 cat *.txt > cog_set.txt
 ```
+
+# Show how to load Orthograph with miniconda
 
 # You're Finished!!!
 
