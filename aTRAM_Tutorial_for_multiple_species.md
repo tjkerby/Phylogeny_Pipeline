@@ -214,20 +214,28 @@ done
 ```
 # Edit headers and prepare for Orthograph
 
-Needs to be fixed below.
+To edit the headers and create the cog set run the script below.
 
 ```bash
 #!/bin/sh
 
-for directory in /path_to_project/atram_stitcher_output/high_memory/*
+for directory in /path_to_project/atram_stitcher_output/*/ ;
 do
 cd ${directory}
-name=`basename ${directory}`
-for f in *fasta
-do sed -i '/>/>${name}' $f
-done
+        name=`basename "${directory}"`
+        for f in *.fasta;
+        do sed -i "s|>|>${name}_|" ${f};
+        ls *.fasta | awk '{print($0)}' > output.txt
+        echo "" >> output.txt
+        cat output.txt | sed 's/^[^\.]*\.//g' | sed 's/_.*//' > cogID.txt
+        cat output.txt | sed 's/.stitch.*//' | sed 'x;s/.*\.fasta_//' > sequenceID.txt
+        echo "$(tail -n +2 sequenceID.txt)" > sequenceID.txt
+        cat output.txt | sed 's/\..*//' > speciesName.txt
+        done
+        paste cogID.txt sequenceID.txt speciesName.txt | column -s $'\t' -t > ../${name}_cog_set.txt
 cd ../
 done
+cat *.txt > cog_set.txt
 ```
 
 # You're Finished!!!
