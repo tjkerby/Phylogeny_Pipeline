@@ -238,3 +238,362 @@ I might consider showing an example of the finished gene file as well as other e
 
 After the above script has finished you should have genes assembled for each of the BUSCO genes. In the phylogeny we will create we will use these BUSCO genes as COGs to build a genetic phylogeny.
  
+To format the COGs as well as translate the nucleotide files run the following script:
+
+```bash
+#!/bin/sh
+
+module purge
+module load emboss
+mkdir -p /lustre/scratch/usr/tkerby2/pws672/Berlandieri_Phylogeny/output_summarized/nt
+mkdir /lustre/scratch/usr/tkerby2/pws672/Berlandieri_Phylogeny/output_summarized/aa
+mkdir /lustre/scratch/usr/tkerby2/pws672/Berlandieri_Phylogeny/output_summarized/temp
+for directory in /lustre/scratch/usr/tkerby2/pws672/Berlandieri_Phylogeny/atram_stitcher_output/*/ ;
+do
+        cd ${directory}
+        INDEX=1
+        name=`basename "${directory}"`
+        for f in *.fasta;
+        do
+                cog_id=`echo $(ls *.fasta | awk '{print($0)}' | sed 's/^[^\.]*\.//g' | sed 's/_.*//' | tail -n+${INDEX} | head -n1)`
+                sequence_id=`echo $(ls *.fasta | awk '{print($0)}' | sed 's/.stitch.*//' | sed 's/.*.fasta_//g' | tail -n+${INDEX} | head -n1)`
+                species_name=`echo $(ls *.fasta | awk '{print($0)}' | sed 's/\..*//' | tail -n+${INDEX} | head -n1)`
+                nt_sequence=`awk '{if(NR>=2) print$0}' ${f}`
+                #length=`awk '{if(NR>=2) print$0}' ${f} | wc -m`
+                #header=`echo ">"${cog_id}"|"${species_name}"|"${sequence_id}"|1-"${length}"|.|."`
+                header=`echo ">"${cog_id}"|"${species_name}"|"${sequence_id}`
+                # Handling if a certain species does not have the gene
+                if [ -s ${f} ]
+                then
+                        # Convert from nucleotides to amino acids
+                        `transeq ${f} /lustre/scratch/usr/tkerby2/pws672/Berlandieri_Phylogeny/output_summarized/temp/${f} -clean`
+                        aa_sequence=`echo "$(awk '{if(NR>=2) printf $0;}' /lustre/scratch/usr/tkerby2/pws672/Berlandieri_Phylogeny/output_summarized/temp/${f})"`
+                        aa_header=`echo ">"${cog_id}"|"${species_name}"|"${sequence_id}`
+                        # Append the header and the amino acid sequence for each species in the same cog file
+                        echo "${aa_header}" >> /lustre/scratch/usr/tkerby2/pws672/Berlandieri_Phylogeny/output_summarized/aa/${cog_id}.aa.fa
+                        echo "${aa_sequence}" >> /lustre/scratch/usr/tkerby2/pws672/Berlandieri_Phylogeny/output_summarized/aa/${cog_id}.aa.fa
+                        # Append the header and the nucleotide sequence for each species in the same cog file
+                        echo "${header}" >> /lustre/scratch/usr/tkerby2/pws672/Berlandieri_Phylogeny/output_summarized/nt/${cog_id}.nt.fa
+                        echo "${nt_sequence}" >> /lustre/scratch/usr/tkerby2/pws672/Berlandieri_Phylogeny/output_summarized/nt/${cog_id}.nt.fa
+                else
+                        #aa_header=`echo ">"${cog_id}"|"${species_name}"|"${sequence_id}"|0-0|.|."`
+                        #aa_header=`echo ">"${cog_id}"|"${species_name}"|"${sequence_id}`
+                        #echo "${aa_header}" >> /lustre/scratch/usr/tkerby2/pws672/Oat_Phylogeny/output_summarized/aa/${cog_id}.aa.fa
+                        #echo "" >> /lustre/scratch/usr/tkerby2/pws672/Oat_Phylogeny/output_summarized/aa/${cog_id}.aa.fa
+                        echo "${f}"
+                fi
+                # Append the header and the nucleotide sequence for each species in the same cog file
+                ((INDEX = INDEX + 1))
+        done
+cd ../
+done
+# Remove the temp folder
+`rm -r /lustre/scratch/usr/tkerby2/pws672/Berlandieri_Phylogeny/output_summarized/temp`
+```
+
+# FIXME
+Consider in each for loop submitting a separate job using sbatch to speed up the process.
+
+Now that we have our COG's formed we need to align them so that they can be effectively compared. First run:
+
+```bash
+mkdir -p 1_alignment/aa
+mkdir 1_alignment/nt 1_alignment/aa_aligned
+cp output_summarized/aa/* 1_alignment/aa/
+cp output_summarized/nt/* 1_alignment/nt/
+rename fa fas 1_alignment/aa/*fa
+rename fa fas 1_alignment/nt/*fa
+cd 1_alignment/aa
+```
+
+mafft.job content:
+```bash
+#!/bin/bash
+
+#SBATCH --time=01:00:00   # walltime
+#SBATCH --ntasks=1   # number of processor cores (i.e. tasks)
+#SBATCH --nodes=1   # number of nodes
+#SBATCH --mem-per-cpu=1G   # memory per CPU core
+#SBATCH -J "Orthograph" #job name
+#SBATCH --mail-user=tjkerby@gmail.com #email address
+#SBATCH --mail-type=END
+#SBATCH --mail-type=FAIL
+
+source ~/.bashrc
+conda activate mafft
+
+mafft-linsi $1 > ../aa_aligned/`basename $1 summarized.aa.fas`linsi.aa.fas
+```
+
+Then run the following for-loop:
+```bash
+for i in *fas; do sbatch mafft.job $i; done
+```
+
+After waiting for all of the jobs to finish you can then move on and copy the perl script below into the aa_aligned directory.
+
+```perl
+#!/usr/bin/perl
+
+# Prints FASTA files with sequences in a single line each
+
+#Change into the alignment directory and run the script. NOTE: The opuput is written on the Screen, so aou have to parse it into a file using >
+#$ cd PATH_TO/aa_aligned
+#$ perl fastasingleline.pl FASTAFILE.fas > FASTAFILE_noninterleaved.fas
+#If you want to run more than one file at once, you have to run it using a loop, for example:
+#$ for i in *.linsi.aa.fas; do perl fastasingleline.pl $i > $i.noninterleaved; done
+#OUTPUT: #The output files have the additional suffix .fas.noninterleaved (non-interleaved), e.g., EOG50003G.aa.linsi.fas.noninterleaved
+
+use strict;
+use warnings;
+
+die "Usage: $0 FASTAFILE\n" unless (scalar @ARGV);
+
+foreach (@ARGV) {
+        my $fh = Seqload::Fasta->open($_);
+        while (my ($h, $s) = $fh->next_seq()) {
+                printf(">%s\n%s\n", $h, $s);
+        }
+        undef $fh;
+}
+
+#
+# Module for easy reading of fasta files
+#
+package Seqload::Fasta;
+use strict;
+use warnings;
+use Carp;
+require Exporter;
+our @ISA = qw(Exporter);
+our @EXPORT_OK = qw( fasta2csv check_if_fasta );
+
+# Constructor. Returns a sequence database object.
+sub open {
+  my ($class, $filename) = @_;
+  open (my $fh, '<', $filename)
+    or confess "Fatal: Could not open $filename\: $!\n";
+  my $self = {
+    'filename' => $filename,
+    'fh'       => $fh
+  };
+  bless($self, $class);
+  return $self;
+}
+
+# Returns the next sequence as an array (hdr, seq).
+# Useful for looping through a seq database.
+sub next_seq {
+  my $self = shift;
+  my $fh = $self->{'fh'};
+        # this is the trick that makes this work
+  local $/ = "\n>"; # change the line separator
+  return unless defined(my $item = readline($fh));  # read the line(s)
+  chomp $item;
+
+  if ($. == 1 and $item !~ /^>/) {  # first line is not a header
+    croak "Fatal: " . $self->{'filename'} . " is not a FASTA file: Missing descriptor line\n";
+  }
+
+        # remove the '>'
+  $item =~ s/^>//;
+
+        # split to a maximum of two items (header, sequence)
+  my ($hdr, $seq) = split(/\n/, $item, 2);
+        $hdr =~ s/\s+$//;       # remove all trailing whitespace
+  $seq =~ s/>//g if defined $seq;
+  $seq =~ s/\s+//g if defined $seq; # remove all whitespace, including newlines
+
+  return($hdr, $seq);
+}
+
+# Closes the file and undefs the database object.
+sub close {
+  my $self = shift;
+  my $fh = $self->{'fh'};
+  my $filename = $self->{'filename'};
+  close($fh) or carp("Warning: Could not close $filename\: $!\n");
+  undef($self);
+}
+
+# Destructor. This is called when you undef() an object
+sub DESTROY {
+  my $self = shift;
+  $self->close;
+}
+```
+
+You can then run that script by using the following for loop:
+```bash
+for i in *linsi.aa.fas; do perl fastasingleline.pl $i > $i.noninterleaved; done
+```
+
+Then rename them with:
+```bash
+rename fas.noninterleaved fas *noninterleaved
+```
+
+Then make a new folder by running:
+```bash
+mkdir 2_remove_gaps
+```
+ 
+Then copy the alligned amino acid files from step one into the step two folder by running:
+```bash
+cp 1_alignment/aa_aligned/*fas 2_remove_gaps/
+```
+
+Then copy the selectSites.pl script to the 2_remove_gaps directory. (The file is not displayed here since it is so long). Then run the perl script by executing the following for loop in the 2_remove_gaps directory:
+
+```bash
+for i in *fas; do perl selectSites.pl -s '1-' -x 1 $i > $i.gapsremoved; done
+```
+
+After the for loop finishes then copy the fastasingline.pl file to the directory and run it in it by executing:
+```bash
+for i in *gapsremoved; do perl fastasingleline.pl $i > $i.noninterleaved; done
+```
+
+Then to help keep things tidy delete and replace the extra files by running:
+```bash
+rm *gapsremoved
+rename fas.gapsremoved.noninterleaved fas *noninterleaved
+```
+
+Next in the main directory make a new folder by running the following command:
+```bash
+mkdir 3_pal2nal
+cp 2_remove_gaps/*fas 3_pal2nal/
+cp 1_alignment/nt/*fas 3_pal2nal/
+rename .aa.faslinsi.aa.fas .linsi.aa.fas *.aa.faslinsi.aa.fas
+```
+
+Next copy the pal2nal script into the directory as well as the execute.sh file. (The execute.sh file is only necessary because I couldn't get the for loop to work unless it was inside of a bash script). After this is completed run:
+
+```bash
+sh execute.sh
+```
+
+# FIXME
+Consider submitting as a job to slurm
+
+Note that it may take some time to run depending on the number of species and genes you are looking at.
+
+After it is finished look at all of the error files and make sure that they are empty. You can check easily by running:
+```bash
+cat *error
+```
+
+If they are not empty something went wrong earlier on. 
+
+Next create directories to help organize all of the output by running:
+```bash
+mkdir aa_aligned_non_interleaved error_files nt_aligned_interleaved nt_not_aligned
+mv *.error error_files
+mv *linsi.aa.fas aa_aligned_non_interleaved
+mv *linsi.nt.fas nt_aligned_interleaved
+mv *nt.fas nt_not_aligned
+```
+
+Copy the script fastasingleline.pl to nt_aligned_interleaved and then change into the directory and then run:
+```bash
+for i in *linsi.nt.fas; do perl fastasingleline.pl $i > $i.noninterleaved; done
+```
+
+Then clean up by running:
+```bash
+rename fas.noninterleaved fas *noninterleaved
+```
+
+Then create a new directory in the main project folder and copy the necessary files into it by running:
+```bash
+mkdir -p 4_rewrite_headers/aa_headers_renamed
+mkdir 4_rewrite_headers/nt_headers_renamed
+cp 3_pal2nal/aa_aligned_non_interleaved/*linsi.aa.fas 4_rewrite_headers/aa_headers_renamed/
+cp 3_pal2nal/nt_aligned_interleaved/*linsi.nt.fas 4_rewrite_headers/nt_headers_renamed/
+```
+
+Copy the following perl script into nt_headers_renamed and aa_headers_renamed directories.
+```perl
+#!/usr/bin/perl
+use strict;
+use warnings;
+use autodie;
+
+while (my $file = <*.fas>) {                            #definiert "file" als Variable nur in dieser Schleife defines "file" as a variable only in this loop
+
+        open my $ifh, '<', $file;                       #ordnet dann jeweiligen "Namen" zu fuer jedes Gen then assigns each "name" for each gene to
+        open my $ofh, '>', "$file.fas.cleaned";
+
+        while (my $line = <$ifh>){
+                chomp $line;
+                if ($line=~ /^>/){
+                        my @fields = split /\|/, $line;
+                        if (scalar @fields == 3) {
+                                $line = $fields[1];
+                        }
+                        elsif (scalar @fields == 4) {
+                                $line = $fields[2];
+                        }
+                        $line =~ s/[^A-Za-z0-9_]/_/g;
+                        $line = '>' . $line;
+                }
+                print $ofh $line, "\n";
+        }
+        close $ifh;
+        close $ofh;
+}
+```
+
+Create a perl-autodie conda environment by running:
+
+```bash
+source ~/.bashrc
+conda create -n perl-autodie -c bioconda perl-autodie
+conda activate perl-autodie
+```
+
+Now switch into the aa_headers_renamed directory and run the rewrite_headers.pl script. Then clean it up by using the rename command.
+```bash
+perl rewrite_headers.pl
+rename fas.fas.cleaned fas *cleaned
+```
+
+Next make another directory in the main project folder and copy in the necessary files by running:
+```bash
+mkdir -p 5_fasconcat/nt_concatenated
+mkdir 5_fasconcat/aa_concatenated
+cp 4_rewrite_headers/nt_headers_renamed/*linsi.nt.fas 5_fasconcat/nt_concatenated/
+cp 4_rewrite_headers/aa_headers_renamed/*linsi.aa.fas 5_fasconcat/aa_concatenated/
+```
+
+Next copy the FASconCAT_v1.0.pl perl script into each of the subdirectories as well as the extract_part_def_nt.py and extract_part_def_aa.py into their respective directories. Then move into the nt_concatenated directory and run the FASconCAT_v1.0.pl script and then press i enter and then s enter.
+```bash
+perl FASconCAT_v1.0.pl
+```
+
+You will be prompted with a screen that requests the type of analysis that you want to do. Press i to ensure that you print out the information file and then
+press s to start the program.
+When you are finished, there should be two new files in your directory: the FASTA file containing the concatenated supermatrix, FcC_smatrix.fas , and
+a file containing information about what you concatenated, FcC_info.xls . You will be using the information file to make new, special file, called a partition
+file. To do this run the script extract_part_def_nt.py on the FcC_info.xls file:
+
+```bash
+python extract_part_def_nt.py FcC_info.xls
+```
+
+This will create a new file called part_def_nt.txt . Now rename the FcC_smatrix.fas file to FcC_smatrix_nt.fas to ensure you don't get
+confused about the file downstream.
+
+```bash
+mv FcC_smatrix.fas FcC_smatrix_nt.fas
+```
+
+Now, you will be performing the same steps on the amino acids.
+
+```bash
+cd ../aa_concatenated
+perl FASconCAT_v1.0.pl
+python extract_part_def_aa.py FcC_info.xls
+mv FcC_smatrix.fas FcC_smatrix_aa.fas
+```
