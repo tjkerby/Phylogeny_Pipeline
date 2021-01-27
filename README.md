@@ -172,6 +172,9 @@ Some things to note from the script is:
 * --assembler is an argument that lets you choose which program you would like to use for assembling. I chose velvet, but there are three others you can use as well. Just make sure that you have the assembler downloaded and loaded into your environment.
 * --query-split is the COGs which is just the concatenated .fna files that were created earlier.
 
+# FIXME
+Need to add the script that removes the filtered genes. I should probably figure out for certain whether there are any differences between the two files.
+
 # aTRAM Stitcher
 
 The next step is to do the aTRAM stitcher. Before we run the script we first need to move all of the filtered files from the output since they are redundant and will bring up an error if left unattended. The script below creates a folder and moves all of the filtered ones inside for each species being assembled.
