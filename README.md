@@ -58,10 +58,6 @@ l=/path_to_dataset/embryophyta_odb10
 run_BUSCO.py -m ${m} -i ${assembly} -o ${output}_${species} -l ${l} -c 1 -f
 ```
 
-# FIXME
-
-## Does this output to the correct directory?
-
 First wait for the script above to finish. Later on for the aTRAM stitcher part you will need to create a taxa list. This can be created while changing to the single_copy_busco_sequences directory that was created when we ran BUSCO and contains all of the .faa and .fna files. Once that is your working directory run the script below. It essentially takes the names from each of the amino acid sequences (.faa files) by printing all of the .faa files and stripping the .faa at the end and then puts them in a text file named taxa.txt.
 
 ```bash
@@ -172,8 +168,7 @@ Some things to note from the script is:
 * --assembler is an argument that lets you choose which program you would like to use for assembling. I chose velvet, but there are three others you can use as well. Just make sure that you have the assembler downloaded and loaded into your environment.
 * --query-split is the COGs which is just the concatenated .fna files that were created earlier.
 
-# FIXME
-Need to add the script that removes the filtered genes. I should probably figure out for certain whether there are any differences between the two files.
+
 
 # aTRAM Stitcher
 
