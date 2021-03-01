@@ -1,0 +1,15 @@
+#!/bin/bash
+
+#SBATCH --time=24:00:00   # walltime
+#SBATCH --ntasks=1   # number of processor cores (i.e. tasks)
+#SBATCH --nodes=1   # number of nodes
+#SBATCH --mem-per-cpu=2G   # memory per CPU core
+#SBATCH -J "Iqtree" #job name
+#SBATCH --mail-user=tjkerby@gmail.com #email address
+#SBATCH --mail-type=END
+#SBATCH --mail-type=FAIL
+
+source ~/.bashrc
+conda activate iqtree
+
+iqtree -s $1 -m TEST -safe -pre `basename $1 .fas`
