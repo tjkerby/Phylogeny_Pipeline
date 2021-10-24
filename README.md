@@ -1,4 +1,7 @@
 # Orphan_Crops_Lab
+The power point presentation is a slightly modified version of the one I gave at the Plant and Animal Genome Conference in 2020. The only alteration was to remove a few images to get the size down so github would be happy with me. 
+
+Apart from doing some comparitive genomic analyses on the genomes of C. Berlandieri with several of its close ancestors I also spent a large amount of time developing a reproducible pipeline for taking raw low coverage reads and turning them into a phylogeny. Below is the documentation for how to recreate it. Be warned. Using BYU's supercomputer, the process below was able to create phylogenies for 95 different taxa in a little over 2 to 4 weeks of computing time. The amount of computational resources requested is shown in the scripts below.
 
 # aTRAM Tutorial for Multiple Species
 
