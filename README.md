@@ -1,7 +1,15 @@
-# Orphan_Crops_Lab
-The power point presentation is a slightly modified version of the one I gave at the Plant and Animal Genome Conference in 2020. The only alteration was to remove a few images to get the size down so github would be happy with me. 
+# Orphan Crops Lab
+I joined the Orphan Crops lab my senior year during my undergrad while at BYU after taking two graduate level Biology/Bioinformatics courses. The lab's website is https://pws.byu.edu/orphaned-crops in case you are interested in learning more about their mission and more recent work.
 
-Apart from doing some comparitive genomic analyses on the genomes of C. Berlandieri with several of its close ancestors I also spent a large amount of time developing a reproducible pipeline for taking raw low coverage reads and turning them into a phylogeny. Below is the documentation for how to recreate it. Be warned. Using BYU's supercomputer, the process below was able to create phylogenies for 95 different taxa in a little over 2 to 4 weeks of computing time. The amount of computational resources requested is shown in the scripts below.
+In the lab I did some comparitive genomic analyses between the genomes of C. Berlandieri and several of its close ancestors. I presented the lab's findings as a speaker at the Plant and Animal Genome Conference in 2020. The presentation slides that I used are in the repository. 
+
+Apart from the comparitive genomic analyses, I also spent a large amount of time developing a reproducible pipeline for taking raw low coverage reads (pacbio long reads with illumina for polishing) and turning them into a phylogeny. Below is the documentation for how to recreate it. Be warned, using BYU's supercomputer, the process below was able to create phylogenies for 95 different taxa in a little over 2 to 4 weeks of computing time. The amount of computational resources requested is shown in the scripts below.
+
+Here is an image of the final product.
+
+![Astral Amino Acid Phylogeny for 95 relatd taxa to C. Berlandieri](https://github.com/tjkerby/Phylogeny_Pipeline/blob/master/astral_95_aa.tre.jpg)
+
+Although the work I did with the pipeline has not been published, (due mainly to me graduating and there not being someone else to pick up) the project gave me a ton of experience with bash scripting, high performance computing, trouble shooting, and communicating complex results to non-technical audiences.
 
 # aTRAM Tutorial for Multiple Species
 
