@@ -13,7 +13,7 @@ Here is an image of the final product.
 
 Although the work I did with the pipeline has not been published, (due mainly to me graduating and there not being someone else to pick up) the project gave me a ton of experience with bash scripting, high performance computing, trouble shooting, and communicating complex results to non-technical audiences.
 
-Below is the code for running the pipeline.
+Most of the pipeline is taking existing tools/scripts and finding a way to make the outputs and inputs compatible. I wrote the make_cogs_format_headers_testing.sh and move_filtered_files.sh scripts. The rest were obtained from the courses that I had taken previously or were found in relation to aTRAM. Below is the pipeline.
 
 # aTRAM Tutorial for Multiple Species
 
