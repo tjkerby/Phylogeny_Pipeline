@@ -3,7 +3,7 @@ I joined the Orphan Crops lab my senior year during my undergrad while at BYU af
 
 In the lab I did some comparitive genomic analyses between the genomes of C. Berlandieri and several of its close ancestors. I presented the lab's findings as a speaker at the Plant and Animal Genome Conference in 2020. The presentation slides that I used are in the repository.
 
-![Picture of me at PAG 2020](https://github.com/tjkerby/Phylogeny_Pipeline/blob/master/PAG_2020.jpg)
+![Picture of me at PAG 2020](https://github.com/tjkerby/Phylogeny_Pipeline/blob/master/PAG_2020_smaller.jpg)
 
 Apart from the comparitive genomic analyses, I also spent a large amount of time developing a reproducible pipeline for taking raw low coverage reads (pacbio long reads with illumina for polishing) and turning them into a phylogeny. Below is the documentation for how to recreate it. Be warned, using BYU's supercomputer, the process below was able to create phylogenies for 95 different taxa in a little over 2 to 4 weeks of computing time. The amount of computational resources requested is shown in the scripts below.
 
