@@ -13,6 +13,8 @@ Here is an image of the final product.
 
 Although the work I did with the pipeline has not been published, (due mainly to me graduating and there not being someone else to pick up) the project gave me a ton of experience with bash scripting, high performance computing, trouble shooting, and communicating complex results to non-technical audiences.
 
+Below is the code for running the pipeline.
+
 # aTRAM Tutorial for Multiple Species
 
 ## Getting Set Up
